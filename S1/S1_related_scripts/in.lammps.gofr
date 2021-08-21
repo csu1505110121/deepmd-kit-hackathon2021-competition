@@ -1,0 +1,29 @@
+# bulk water
+
+units           metal
+boundary        p p p
+atom_style      atomic
+
+neighbor        2.0 bin
+neigh_modify    every 10 delay 0 check no
+
+read_data	../Cu_3x3x3.lmp
+mass 		1 64
+
+
+pair_style	deepmd ../frozen_model.pb
+pair_coeff	
+
+velocity        all create 298.15 23456789
+
+fix             1 all nvt temp 298.15 298.15 0.5
+timestep        0.0005
+thermo_style    custom step pe ke etotal temp press vol
+thermo          100
+dump		1 all custom 100 water.dump id type x y z 
+
+# section for rdf
+compute gofr all rdf 100
+fix rdf all ave/time 100 10 100000 c_gofr[*] file fcc-rdf.dat mode vector
+
+run             100000
